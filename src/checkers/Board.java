@@ -21,6 +21,7 @@ public class Board extends GridPane {
     
     Board() {        
         draw();
+        populate();
     }
     
     private void draw() {
@@ -43,14 +44,57 @@ public class Board extends GridPane {
         }
     }
     
-    private void addTile(String colour, int x, int y) {
-        Color tileColour = Color.BROWN;
-        if(colour.equals("white")) {
-            tileColour = Color.BEIGE;
+    private void populate() {
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 8; j++) {
+                if(i % 2 == 0) {
+                    if(j % 2 == 1)
+                        addChecker("white", j, i);
+                } else {
+                    if(j % 2 == 0)
+                        addChecker("white", j, i);
+                }                
+            }
         }
         
+        for(int i = 7; i > 4; i--) {
+            for(int j = 0; j < 8; j++) {
+                if(i % 2 == 0) {
+                    if(j % 2 == 1)
+                        addChecker("black", j, i);
+                } else {
+                    if(j % 2 == 0)
+                        addChecker("black", j, i);
+                }
+            }
+        }
+    }
+    
+    private void addTile(String colour, int x, int y) {
+        Color tileColour = Color.BLACK;
+        if(colour.equals("white"))
+            tileColour = Color.RED;
+        
         Tile tile = new Tile(75, 75, tileColour);
+//        System.out.println("adding tile: " + tile);
         add(tile, x, y);
         tiles[x][y] = tile;
+    }
+    
+    private void addChecker(String colour, int x, int y) {
+        Color tileColour = Color.BLUE;
+        if(colour.equals("white"))
+            tileColour = Color.WHITE;
+        
+        Checker checker = new Checker(75/2, tileColour, tiles[x][y]);
+        System.out.println("adding checker: " + checker);
+        add(checker, x, y);
+        
+        //fix this up
+        if(colour.equals("black")) {
+            blackCheckers.add(checker);
+        } else {
+            whiteCheckers.add(checker);
+        }
     }
 }

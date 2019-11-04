@@ -18,14 +18,5 @@ public class Checker extends Circle {
     
     Checker(double radius, Paint fill, Tile tile) {
         super(radius, fill);
-        
-        place(tile);
-    }
-    
-    public final void place(Tile tile) {
-        currentTile.removeChecker();
-        currentTile = tile;
-        // can be expanded to place 'this' particular checker onto tile if need be
-        currentTile.placeChecker(this);
     }
 }
