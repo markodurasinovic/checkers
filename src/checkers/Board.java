@@ -76,7 +76,6 @@ public class Board extends GridPane {
             tileColour = Color.RED;
         
         Tile tile = new Tile(75, 75, tileColour);
-//        System.out.println("adding tile: " + tile);
         add(tile, x, y);
         tiles[x][y] = tile;
     }
@@ -87,7 +86,6 @@ public class Board extends GridPane {
             tileColour = Color.WHITE;
         
         Checker checker = new Checker(75/2, tileColour, tiles[x][y]);
-        System.out.println("adding checker: " + checker);
         add(checker, x, y);
         
         //fix this up
