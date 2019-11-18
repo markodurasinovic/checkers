@@ -22,6 +22,7 @@ public class Board extends GridPane {
 //    Tile[][] tiles = new Tile[8][8];
     ArrayList<Checker> blackCheckers = new ArrayList<>();
     ArrayList<Checker> whiteCheckers = new ArrayList<>();
+    HashMap<Tile, EventHandler> tileFilters = new HashMap<>();
     
     
     Board() {        
@@ -133,14 +134,9 @@ public class Board extends GridPane {
             public void handle(MouseEvent event) {
                 checker.setPossibleMoves();
                 checker.showPossibleMoves();
-                ArrayList<Tile> tiles = checker.currentPossibleMoves;
-                addTileHandlers(tiles.get(0), tiles.get(1), checker);
-                addTileHandlers(tiles.get(1), tiles.get(0), checker);
-//                checker.currentPossibleMoves.forEach((tile) -> {
-//                    addTileHandlers(tile, checker);
-//                });
-            
-                checker.removeEventFilter(MouseEvent.MOUSE_CLICKED, this);
+                checker.currentPossibleMoves.forEach((tile) -> {
+                    addTileHandlers(tile, checker);
+                });
             }
         };         
        
@@ -148,31 +144,29 @@ public class Board extends GridPane {
     }
     
     
-    private void addTileHandlers(Tile tile, Tile otherTile, Checker checker) {      
+    private void addTileHandlers(Tile tile, Checker checker) {      
         
         EventHandler<MouseEvent> moveHandler = new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                checker.currentTile.removeChecker();                
-                getChildren().remove(checker);
-                tile.placeChecker(checker);
-                add(checker, tile.x, tile.y);
-                checker.hidePossibleMoves();
-                
-                Node node = (Node) tile;
-                removeEventFilterFromNode(node, this);
-                Node otherNode = (Node) otherTile;
-                removeEventFilterFromNode(otherNode, this);
-//                tile.removeEventFilter(MouseEvent.MOUSE_CLICKED, this);
-//                otherTile.removeEventFilter(MouseEvent.MOUSE_CLICKED, this);
+                moveChecker(checker, tile);
             }
         };
         
         tile.addEventFilter(MouseEvent.MOUSE_CLICKED, moveHandler);
+        tileFilters.put(tile, moveHandler);
     }
     
-    private void removeEventFilterFromNode(Node node, EventHandler eh) {        
-        node.removeEventFilter(MouseEvent.MOUSE_CLICKED, eh);
-        System.out.println("removing filter from " + node);
+    private void moveChecker(Checker checker, Tile tile) {
+        checker.currentTile.removeChecker();
+        getChildren().remove(checker);
+        tile.placeChecker(checker);
+        add(checker, tile.x, tile.y);
+        checker.hidePossibleMoves();
+                
+        checker.currentPossibleMoves.forEach((move) -> {
+            move.removeEventFilter(MouseEvent.MOUSE_CLICKED, tileFilters.get(move));
+        });
     }
+        
 }

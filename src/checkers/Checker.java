@@ -6,6 +6,7 @@
 package checkers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -18,8 +19,9 @@ import javafx.scene.shape.Circle;
  */
 public class Checker extends Circle {
     Tile currentTile;
-    boolean movingUp, justMoved;
+    boolean movingUp;
     ArrayList<Tile> currentPossibleMoves;
+    Color colour, opposingColour;
     
     
     
@@ -28,7 +30,9 @@ public class Checker extends Circle {
         currentTile = tile;
         
         movingUp = fill == Color.BLUE;
-        justMoved = false;
+        opposingColour = fill == Color.BLUE ? Color.WHITE : Color.BLUE;
+        colour = (Color) fill;
+        
 //        System.out.println(currentTile.position);
     }
     
@@ -50,35 +54,92 @@ public class Checker extends Circle {
     
     private ArrayList<Tile> getPossibleMoves() {
         ArrayList<Tile> possibleMoves = new ArrayList<>();
-        int x = currentTile.x;
-        int y = currentTile.y;
         
         if(movingUp) {
-            possibleMoves.add(getPossibleMove(x - 1, y - 1));
-            possibleMoves.add(getPossibleMove(x + 1, y - 1)); 
+            possibleMoves.add(getLeftMove(-1));
+            possibleMoves.add(getRightMove(-1)); 
         } else {            
-            possibleMoves.add(getPossibleMove(x - 1, y + 1));
-            possibleMoves.add(getPossibleMove(x + 1, y + 1));
+            possibleMoves.add(getLeftMove(1));
+            possibleMoves.add(getRightMove(1));
         }
+        
+        // Removing 'null' moves i.e. moves which are illegal such as out of
+        // board bounds or onto a tile containing another checker.
+        possibleMoves.removeAll(Collections.singleton(null));
         
         return possibleMoves;
     }
     
-    private Tile getPossibleMove(int x, int y) {
-        Tile tile = Tile.getTile(x, y);
-        if(tile != null && !tile.hasChecker()) {
-            return tile;
-        }        
+    private Tile getLeftMove(int direction) {
+        Tile tile = Tile.getTile(currentTile.x - 1, currentTile.y + direction);
+        if(tile != null) {
+            if(!tile.hasChecker()) {
+                return tile;
+            } else if(tile.checker.colour == opposingColour) {
+                return getLeftTakingMove(direction, tile.x, tile.y);
+            }
+        }
         
         return null;
     }
     
-    public void place(Tile tile) {
-        currentTile = tile;
-        justMoved = true;
+    private Tile getLeftTakingMove(int direction, int x, int y) {
+        Tile tile = Tile.getTile(x - 1, y + direction);
+        if(tile != null) {
+            if(!tile.hasChecker()) {
+//                return getLeftMove(direction);
+                return tile;
+            } else {
+                return null;
+            }
+        }
+        
+        return tile;
     }
     
-    public boolean justMoved() {
-        return justMoved;
+    private Tile getRightMove(int direction) {
+        Tile tile = Tile.getTile(currentTile.x + 1, currentTile.y + direction);
+        if(tile != null) {
+            if(!tile.hasChecker()) {
+                return tile;
+            } else if(tile.checker.colour == opposingColour) {
+                return getRightTakingMove(direction, tile.x, tile.y);
+            }
+        }
+        
+        return null;
     }
+    
+    private Tile getRightTakingMove(int direction, int x, int y) {
+        Tile tile = Tile.getTile(x + 1, y + direction);
+        if(tile != null) {
+            if(!tile.hasChecker()) {
+//                return getRightMove(direction);
+                return tile;
+            } else {
+                return null;
+            }
+        }
+        
+        return tile;
+    }
+    
+//    private Tile getPossibleMove(int x, int y) {
+//        Tile tile = Tile.getTile(x, y);
+//        if(tile != null) {
+//            if(!tile.hasChecker()) {
+//                return tile;
+//            } else {
+//                
+//            }
+//        }
+//        
+//        
+//        
+//        return null;
+//    }
+    
+    public void place(Tile tile) {
+        currentTile = tile;
+    }    
 }
