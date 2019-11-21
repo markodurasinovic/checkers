@@ -7,6 +7,7 @@ package checkers;
 
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
@@ -19,13 +20,14 @@ public class Tile extends Rectangle {
     Checker checker;
     int x, y;
     static Tile[][] TILES = new Tile[8][8];
-    Paint originalColour;
+    Paint originalColour, colour;
     
     Tile(double width, double height, Paint fill, int x, int y) {
         super(width, height, fill);
         this.x = x;
         this.y = y;
-        originalColour = fill;
+        originalColour = (Color) fill;
+        colour = (Color) fill;
     }
     
     public void placeChecker(Checker c) {
@@ -51,5 +53,15 @@ public class Tile extends Rectangle {
         return null;
     }
     
+    public void setColour(Color colour) {
+        setFill(colour);
+        this.colour = colour;
+    }
     
+    public void resetColour() {
+        if(colour == originalColour)
+            return;
+        
+        setFill(originalColour);
+    }    
  }

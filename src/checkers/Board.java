@@ -19,7 +19,6 @@ import javafx.scene.paint.Color;
  * @author Marko
  */
 public class Board extends GridPane {
-//    Tile[][] tiles = new Tile[8][8];
     ArrayList<Checker> blackCheckers = new ArrayList<>();
     ArrayList<Checker> whiteCheckers = new ArrayList<>();
     HashMap<Tile, EventHandler> tileFilters = new HashMap<>();
@@ -132,9 +131,12 @@ public class Board extends GridPane {
         EventHandler<MouseEvent> eventHandler = new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                checker.setPossibleMoves();
+                clearTileHandlers();
+                resetTileColours();
+                
+                checker.calculatePossibleMoves();
                 checker.showPossibleMoves();
-                checker.currentPossibleMoves.forEach((tile) -> {
+                checker.getPossibleMoves().forEach((tile) -> {
                     addTileHandlers(tile, checker);
                 });
             }
@@ -159,14 +161,46 @@ public class Board extends GridPane {
     
     private void moveChecker(Checker checker, Tile tile) {
         checker.currentTile.removeChecker();
+        Tile[] move = checker.getMove(tile);
+                
         getChildren().remove(checker);
         tile.placeChecker(checker);
+        checker.place(tile);
         add(checker, tile.x, tile.y);
-        checker.hidePossibleMoves();
-                
-        checker.currentPossibleMoves.forEach((move) -> {
-            move.removeEventFilter(MouseEvent.MOUSE_CLICKED, tileFilters.get(move));
-        });
+        
+        if(move[1] != null) {
+            Checker takenChecker = move[1].checker;
+            move[1].removeChecker();
+            getChildren().remove(takenChecker);
+        }
+        
+        if(checker.inKingsRow()) {
+            checker.crown();
+        }
+        
+        
+        resetTileColours();                
+        clearTileHandlers();
+    }
+    
+    private void checkVictory() {
+        
     }
         
+    private void clearTileHandlers() {
+        if(tileFilters.isEmpty())
+            return;
+        
+        tileFilters.keySet().forEach((tile) -> {
+            tile.removeEventFilter(MouseEvent.MOUSE_CLICKED, tileFilters.get(tile));
+        });
+    }
+    
+    private void resetTileColours() {
+        for(Tile[] tileRow : Tile.TILES) {
+            for(Tile tile : tileRow) {
+                tile.resetColour();
+            }
+        }
+    }
 }
