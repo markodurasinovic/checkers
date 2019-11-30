@@ -5,6 +5,8 @@
  */
 package checkers;
 
+import java.util.ArrayList;
+import java.util.Objects;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -40,6 +42,25 @@ public class Tile extends Rectangle {
     
     public boolean hasChecker() {
         return checker != null;
+    }
+    
+    public ArrayList<Tile> getSurroundingTiles() {
+        ArrayList<Tile> surroundingTiles = new ArrayList<>();
+        
+        surroundingTiles.add(getTile(x + 1, y + 1));
+        surroundingTiles.add(getTile(x + 1, y - 1));
+        surroundingTiles.add(getTile(x - 1, y + 1));
+        surroundingTiles.add(getTile(x - 1, y - 1));
+        
+        surroundingTiles.removeIf(Objects::isNull);
+        return surroundingTiles;
+    }
+    
+    public Tile getAdjacentTile(Tile tile) {
+        int horDir = (x - tile.x) * -1;
+        int vertDir = (y - tile.y) * -1;
+        
+        return getTile(tile.x + horDir, tile.y + vertDir);
     }
     
     static public Tile getTile(int x, int y) {

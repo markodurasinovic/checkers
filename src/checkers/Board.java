@@ -7,9 +7,7 @@ package checkers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -22,7 +20,6 @@ public class Board extends GridPane {
     ArrayList<Checker> blackCheckers = new ArrayList<>();
     ArrayList<Checker> whiteCheckers = new ArrayList<>();
     HashMap<Tile, EventHandler> tileFilters = new HashMap<>();
-    boolean turn, postCapture;
     
     
     Board() {        
@@ -30,9 +27,6 @@ public class Board extends GridPane {
         populate();
         paint();
         addHandlers();
-        
-        // turn = false(0) for black and true(1) for white
-        turn = false;
     }
     
     private void draw() {
@@ -107,11 +101,6 @@ public class Board extends GridPane {
             whiteCheckers.add(checker);
         }
     }
-//    
-//    public void moveChecker(Checker checker, int x, int y) {
-//        getChildren().remove(checker);
-//        add(checker, x, y);
-//    }
     
     public void paint() {        
         for(Tile[] tileRow : Tile.TILES) {
@@ -134,15 +123,7 @@ public class Board extends GridPane {
     private void addCheckerHandlers(Checker checker) {
         EventHandler<MouseEvent> eventHandler = new EventHandler<MouseEvent>() {
             @Override
-            public void handle(MouseEvent event) {
-                if(!checker.hasTurn(turn)) {
-                    return;
-                }
-                
-                if(postCapture && !checker.justCaptured) {
-                    return;
-                }
-                
+            public void handle(MouseEvent event) {                
                 clearTileHandlers();
                 resetTileColours();
                 
@@ -175,9 +156,6 @@ public class Board extends GridPane {
         
         if(checker.isTakingMove(tile)) {
             capture(checker, tile);
-        } else {
-            // swap whose turn it is
-            turn = !turn;
         }
         
         if(checker.inKingsRow()) {
@@ -193,18 +171,13 @@ public class Board extends GridPane {
         
         getChildren().remove(checker);
         add(checker, tile.x, tile.y);
-        postCapture = false;        
     }
     
     private void capture(Checker checker, Tile tile) {
         checker.performTakingMove(tile);
-        for(Checker c : checker.getTakenCheckers()) {
+        for(Checker c : checker.getTakenCheckers(tile)) {
             getChildren().remove(c);
         }
-        
-        
-//        if(checker.canMove()) 
-//            postCapture = true;
     }
             
     private void clearTileHandlers() {
