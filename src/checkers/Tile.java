@@ -31,10 +31,7 @@ public class Tile extends Rectangle {
     }
     
     public void placeChecker(Checker c) {
-        if(!hasChecker()) { 
-            checker = c;
-            checker.place(this);
-        }
+        checker = c;
     }
     
     public void removeChecker() {

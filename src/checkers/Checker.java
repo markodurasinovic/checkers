@@ -21,12 +21,12 @@ import javafx.scene.shape.Circle;
 public class Checker extends Circle {
     Tile currentTile;
     boolean movingUp;
-//    ArrayList<Tile> currentPossibleMoves;
     HashMap<Tile, Tile> currentPossibleMoves;
+    HashMap<Tile, Tile> possibleTakingMoves;
     Color colour, opposingColour;
-    boolean canCapture;
-    boolean isKing;
-    
+    boolean canCapture, justCaptured, isKing;  
+    ArrayList<Checker> takenCheckers;
+    ArrayList<Tile> jumpedTiles;
     
     
     Checker(double radius, Paint fill, Tile tile) {
@@ -38,8 +38,13 @@ public class Checker extends Circle {
         colour = (Color) fill;
         
         currentPossibleMoves = new HashMap<>();
+        possibleTakingMoves = new HashMap<>();
         canCapture = false;
+        justCaptured = false;
         isKing = false;
+        
+        takenCheckers = new ArrayList<>();
+        jumpedTiles = new ArrayList<>();
     }
     
     public void showPossibleMoves() {              
@@ -52,6 +57,10 @@ public class Checker extends Circle {
         return currentPossibleMoves.keySet();
     }
     
+    public boolean isTakingMove(Tile tile) {
+        return getMove(tile)[1] != null;
+    }
+        
     public Tile[] getMove(Tile tile) {
         Tile[] move = new Tile[2];
         move[0] = tile;
@@ -72,62 +81,106 @@ public class Checker extends Circle {
     private void setColour(Color colour) {
         setFill(colour);
     }
-        
+    
+    public boolean canMove() {
+        calculatePossibleMoves();
+        return !currentPossibleMoves.isEmpty();
+    }      
+    
     public void calculatePossibleMoves() {
         currentPossibleMoves.clear();
-        canCapture = false;
+        possibleTakingMoves.clear();        
+        jumpedTiles.clear();
         
+        getMoves(currentTile);
+        
+        if(!possibleTakingMoves.isEmpty()) {
+            currentPossibleMoves = possibleTakingMoves;
+        }
+    }
+    
+    public void getMoves(Tile tile) {
         if(isKing) {
-            getMove(-1, -1);
-            getMove(1, -1);
-            getMove(-1, 1);
-            getMove(1, 1);
+            addPossibleMove1(tile, -1, -1);
+            addPossibleMove1(tile, 1, -1);
+            addPossibleMove1(tile, -1, 1);
+            addPossibleMove1(tile, 1, 1);
         } else {
             if(movingUp) {
-                getMove(-1, -1);
-                getMove(1, -1);
+                addPossibleMove1(tile, -1, -1);
+                addPossibleMove1(tile, 1, -1);
             } else {            
-                getMove(-1, 1);
-                getMove(1, 1);
+                addPossibleMove1(tile, -1, 1);
+                addPossibleMove1(tile, 1, 1);
             }
         }     
+    }
+    
+    private void addPossibleMove1(Tile tile, int horDir, int vertDir) {
+        Tile moveTile = Tile.getTile(tile.x + horDir, tile.y + vertDir);
+        if(moveTile != null) {
+            if(!moveTile.hasChecker()) {
+                currentPossibleMoves.put(moveTile, null);
+            } else if(moveTile.checker.colour == opposingColour) {
+                addPossibleTakingMoves(tile, moveTile);
+            }
+        }
+    }
+    
+    private void addPossibleTakingMoves(Tile tile, Tile moveTile) {
+        int horDir = (tile.x - moveTile.x) * -1;
+        if(isKing) {
+            addTakingMove(moveTile, horDir, -1);
+            addTakingMove(moveTile, horDir, 1);
+        } else {
+            if(movingUp) {
+                addTakingMove(moveTile, horDir, -1);
+            } else {
+                addTakingMove(moveTile, horDir, 1);
+            }                
+        }
+    }
+    
+    private void addTakingMove(Tile moveTile, int horDir, int vertDir) {
+        Tile tile = Tile.getTile(moveTile.x + horDir, moveTile.y + vertDir);
+        if(tile != null) {
+            if(!tile.hasChecker()) {
+                possibleTakingMoves.put(tile, moveTile);
+                jumpedTiles.add(moveTile);
+                getMoves(tile);
+            }
+        }
+    }
+            
+    public boolean hasTurn(boolean turn) {
+        // dont allow move if it's not my colour's turn
+        if(!turn && !isBlue() || turn && isBlue()) {
+            return false;
+        }
         
-        
-        // Forcing a capturing move to be performed.
-        if(canCapture) {
-            currentPossibleMoves.values().removeIf(Objects::isNull);
+        return true;
+    }
+    
+    public void performTakingMove(Tile tile) {
+        takenCheckers.clear();
+        for(Tile jT : jumpedTiles) {
+            Checker takenChecker = jT.checker;
+            takenChecker.currentTile.removeChecker();
+            takenCheckers.add(takenChecker);
+        }
+    }
+    
+    public ArrayList<Checker> getTakenCheckers() {
+        return takenCheckers;
+    }
+    
+    public void move(Tile tile) {
+        if(!tile.hasChecker()) {
+            currentTile.removeChecker();
+            currentTile = tile;
+            currentTile.placeChecker(this);
+            justCaptured = false;
         }        
-    }
-    
-    private void getMove(int horizontalDirection, int verticalDirection) {
-        Tile tile = Tile.getTile(currentTile.x + horizontalDirection, currentTile.y + verticalDirection);
-       
-        if(tile != null) {
-            if(!tile.hasChecker()) {
-                currentPossibleMoves.put(tile, null);
-            } else if(tile.checker.colour == opposingColour) {
-                Tile moveTile = getTakingMove(tile.x + horizontalDirection, tile.y + verticalDirection);
-                if(moveTile != null) {
-                    currentPossibleMoves.put(moveTile, tile);
-                    canCapture = true;
-                }
-            }
-        }
-    }
-    
-    private Tile getTakingMove(int x, int y) {
-        Tile tile = Tile.getTile(x, y);
-        if(tile != null) {
-            if(!tile.hasChecker()) {
-                return tile;
-            }
-        }
-        
-        return null;
-    }
-    
-    public void place(Tile tile) {
-        currentTile = tile;
     }    
     
     public boolean isBlue() {

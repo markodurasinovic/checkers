@@ -22,6 +22,7 @@ public class Board extends GridPane {
     ArrayList<Checker> blackCheckers = new ArrayList<>();
     ArrayList<Checker> whiteCheckers = new ArrayList<>();
     HashMap<Tile, EventHandler> tileFilters = new HashMap<>();
+    boolean turn, postCapture;
     
     
     Board() {        
@@ -29,6 +30,9 @@ public class Board extends GridPane {
         populate();
         paint();
         addHandlers();
+        
+        // turn = false(0) for black and true(1) for white
+        turn = false;
     }
     
     private void draw() {
@@ -103,11 +107,11 @@ public class Board extends GridPane {
             whiteCheckers.add(checker);
         }
     }
-    
-    public void moveChecker(Checker checker, int x, int y) {
-        getChildren().remove(checker);
-        add(checker, x, y);
-    }
+//    
+//    public void moveChecker(Checker checker, int x, int y) {
+//        getChildren().remove(checker);
+//        add(checker, x, y);
+//    }
     
     public void paint() {        
         for(Tile[] tileRow : Tile.TILES) {
@@ -131,6 +135,14 @@ public class Board extends GridPane {
         EventHandler<MouseEvent> eventHandler = new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
+                if(!checker.hasTurn(turn)) {
+                    return;
+                }
+                
+                if(postCapture && !checker.justCaptured) {
+                    return;
+                }
+                
                 clearTileHandlers();
                 resetTileColours();
                 
@@ -144,7 +156,6 @@ public class Board extends GridPane {
        
         checker.addEventFilter(MouseEvent.MOUSE_CLICKED, eventHandler);
     }
-    
     
     private void addTileHandlers(Tile tile, Checker checker) {      
         
@@ -160,33 +171,42 @@ public class Board extends GridPane {
     }
     
     private void moveChecker(Checker checker, Tile tile) {
-        checker.currentTile.removeChecker();
-        Tile[] move = checker.getMove(tile);
-                
-        getChildren().remove(checker);
-        tile.placeChecker(checker);
-        checker.place(tile);
-        add(checker, tile.x, tile.y);
+        move(checker, tile);
         
-        if(move[1] != null) {
-            Checker takenChecker = move[1].checker;
-            move[1].removeChecker();
-            getChildren().remove(takenChecker);
+        if(checker.isTakingMove(tile)) {
+            capture(checker, tile);
+        } else {
+            // swap whose turn it is
+            turn = !turn;
         }
         
         if(checker.inKingsRow()) {
             checker.crown();
-        }
-        
+        }        
         
         resetTileColours();                
         clearTileHandlers();
     }
     
-    private void checkVictory() {
+    private void move(Checker checker, Tile tile) {
+        checker.move(tile);
         
+        getChildren().remove(checker);
+        add(checker, tile.x, tile.y);
+        postCapture = false;        
     }
+    
+    private void capture(Checker checker, Tile tile) {
+        checker.performTakingMove(tile);
+        for(Checker c : checker.getTakenCheckers()) {
+            getChildren().remove(c);
+        }
         
+        
+//        if(checker.canMove()) 
+//            postCapture = true;
+    }
+            
     private void clearTileHandlers() {
         if(tileFilters.isEmpty())
             return;
