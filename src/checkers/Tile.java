@@ -51,7 +51,7 @@ public class Tile extends Rectangle {
         surroundingTiles.add(getTile(x + 1, y - 1));
         surroundingTiles.add(getTile(x - 1, y + 1));
         surroundingTiles.add(getTile(x - 1, y - 1));
-        
+                
         surroundingTiles.removeIf(Objects::isNull);
         return surroundingTiles;
     }

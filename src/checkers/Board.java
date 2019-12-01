@@ -21,12 +21,21 @@ public class Board extends GridPane {
     ArrayList<Checker> whiteCheckers = new ArrayList<>();
     HashMap<Tile, EventHandler> tileFilters = new HashMap<>();
     
+    HumanPlayer humanPlayer;
+    AIPlayer aiPlayer;
+    Player nextTurn;
+    
     
     Board() {        
         draw();
         populate();
         paint();
         addHandlers();
+        
+        humanPlayer = new HumanPlayer(blackCheckers, "black");
+        aiPlayer = new AIPlayer(whiteCheckers, "white");
+        
+        nextTurn = humanPlayer;
     }
     
     private void draw() {
@@ -123,7 +132,11 @@ public class Board extends GridPane {
     private void addCheckerHandlers(Checker checker) {
         EventHandler<MouseEvent> eventHandler = new EventHandler<MouseEvent>() {
             @Override
-            public void handle(MouseEvent event) {                
+            public void handle(MouseEvent event) {
+                System.out.println(nextTurn);
+                if(!nextTurn.ownsChecker(checker))
+                    return;
+                
                 clearTileHandlers();
                 resetTileColours();
                 
@@ -164,6 +177,9 @@ public class Board extends GridPane {
         
         resetTileColours();                
         clearTileHandlers();
+        switchTurn();
+        
+        checkGameFinished();
     }
     
     private void move(Checker checker, Tile tile) {
@@ -195,5 +211,21 @@ public class Board extends GridPane {
                 tile.resetColour();
             }
         }
+    }
+    
+    private void switchTurn() {
+        if(nextTurn == humanPlayer) {
+            nextTurn = aiPlayer;
+        } else {
+            nextTurn = humanPlayer;
+        }
+    }
+    
+    private void checkGameFinished() {
+        if(humanPlayer.hasLost())
+            System.out.println(humanPlayer.colour + " has lost!");
+        
+        if(aiPlayer.hasLost())
+            System.out.println(aiPlayer.colour + " has lost!");
     }
 }

@@ -6,9 +6,7 @@
 package checkers;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Set;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -21,10 +19,8 @@ import javafx.scene.shape.Circle;
 public class Checker extends Circle {
     Tile currentTile;
     boolean movingUp;
-    HashMap<Tile, Tile> currentPossibleMoves;
-    HashMap<Tile, Tile> possibleTakingMoves;
     Color colour, opposingColour;
-    boolean canCapture, justCaptured, isKing;  
+    boolean isKing;  
     
     HashMap<Tile, ArrayList<Checker>> possibleMoves;
         
@@ -37,10 +33,6 @@ public class Checker extends Circle {
         opposingColour = fill == Color.BLUE ? Color.WHITE : Color.BLUE;
         colour = (Color) fill;
         
-        currentPossibleMoves = new HashMap<>();
-        possibleTakingMoves = new HashMap<>();
-        canCapture = false;
-        justCaptured = false;
         isKing = false;
         
         possibleMoves = new HashMap<>();
@@ -78,7 +70,8 @@ public class Checker extends Circle {
     
     public boolean canMove() {
         calculatePossibleMoves();
-        return !currentPossibleMoves.isEmpty();
+        
+        return !possibleMoves.isEmpty();
     }     
     
     public void calculatePossibleMoves() {
@@ -91,18 +84,16 @@ public class Checker extends Circle {
             return;
         
         ArrayList<Checker> enemyNeighbours = getEnemyNeighbours(tile);
-        if(enemyNeighbours.isEmpty() || !hasTakingMove(tile, enemyNeighbours)) {
+        if(enemyNeighbours.isEmpty() || 
+           !hasTakingMove(tile, enemyNeighbours) && !isTakingMove(tile)) {
             addForwardMove(tile);
         } else {
             enemyNeighbours.forEach((Checker c) -> {                
                 if(canTake(tile, c)) {
-                    //
-                    c.currentTile.setColour(Color.YELLOW);
-                    //
                    addMove(tile, c);
                    Tile nextMoveTile = tile.getAdjacentTile(c.currentTile);
-//                   calculateMovesForTile(nextMoveTile);
-               } 
+                   calculateMovesForTile(nextMoveTile);
+               }
             });  
         }     
     }
@@ -154,7 +145,7 @@ public class Checker extends Circle {
         Tile moveTile = fromTile.getAdjacentTile(checker.currentTile);        
         
         if(moveTile != null && !moveTile.hasChecker()) {
-            if(isKing)
+            if(isKing && !alreadyVisited(moveTile))
                 return true;
             
             if(movingUp) {
@@ -167,6 +158,10 @@ public class Checker extends Circle {
         }
         
         return false;
+    }
+    
+    private boolean alreadyVisited(Tile tile) {
+        return possibleMoves.keySet().contains(tile);
     }
     
     private void addMove(Tile tile, Checker capturedChecker) {
@@ -184,30 +179,25 @@ public class Checker extends Circle {
             possibleMoves.put(moveTile, new ArrayList<>());
         }
         
-        possibleMoves.get(moveTile).add(capturedChecker);
-//        
-//        if(possibleMoves.get(previousTile) == null) {
-//            possibleMoves.get(moveTile).add(capturedChecker);
-//        } else {
-//            possibleMoves.get(previousTile).forEach((Checker c) -> {
-//                possibleMoves.get(moveTile).add(c);
-//            });
-//            possibleMoves.get(moveTile).add(capturedChecker);
-//        }
-    }      
-        
-    public boolean hasTurn(boolean turn) {
-        // dont allow move if it's not my colour's turn
-        if(!turn && !isBlue() || turn && isBlue()) {
-            return false;
+        ArrayList<Checker> capturedCheckers = possibleMoves.get(moveTile);
+        ArrayList<Checker> previouslyCapturedCheckers = possibleMoves.get(previousTile);
+        if(previouslyCapturedCheckers != null) {
+            for(Checker cc : previouslyCapturedCheckers) {
+                capturedCheckers.add(cc);
+            }
         }
         
-        return true;
-    }
+        possibleMoves.get(moveTile).add(capturedChecker);
+    }      
     
     public void performTakingMove(Tile tile) {
-        for(Checker checker : possibleMoves.get(tile)) {
+        for(Checker checker : getTakenCheckers(tile)) {
+            // regicide
+            if(checker.isKing)
+                crown();
+            //
             checker.currentTile.removeChecker();
+            checker.currentTile = null;            
         }
     }
     
@@ -220,7 +210,6 @@ public class Checker extends Circle {
             currentTile.removeChecker();
             currentTile = tile;
             currentTile.placeChecker(this);
-            justCaptured = false;
         }        
     }    
     
