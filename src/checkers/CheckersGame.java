@@ -18,9 +18,9 @@ public class CheckersGame extends Application {
     @Override
     public void start(Stage primaryStage) {
         
-        Board board = new Board();
+        Game game = new Game();
         
-        Scene scene = new Scene(board);
+        Scene scene = new Scene(game.board);
 
         primaryStage.setTitle("Checkers");
         primaryStage.setScene(scene);

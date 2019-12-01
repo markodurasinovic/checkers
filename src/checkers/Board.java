@@ -6,9 +6,6 @@
 package checkers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import javafx.event.EventHandler;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
@@ -18,24 +15,12 @@ import javafx.scene.paint.Color;
  */
 public class Board extends GridPane {
     ArrayList<Checker> blackCheckers = new ArrayList<>();
-    ArrayList<Checker> whiteCheckers = new ArrayList<>();
-    HashMap<Tile, EventHandler> tileFilters = new HashMap<>();
-    
-    HumanPlayer humanPlayer;
-    AIPlayer aiPlayer;
-    Player nextTurn;
-    
+    ArrayList<Checker> whiteCheckers = new ArrayList<>();  
     
     Board() {        
         draw();
         populate();
         paint();
-        addHandlers();
-        
-        humanPlayer = new HumanPlayer(blackCheckers, "black");
-        aiPlayer = new AIPlayer(whiteCheckers, "white");
-        
-        nextTurn = humanPlayer;
     }
     
     private void draw() {
@@ -119,113 +104,13 @@ public class Board extends GridPane {
                 }
             }
         }
-    }
+    }         
     
-    private void addHandlers() {
-        for(Checker checker : whiteCheckers)
-            addCheckerHandlers(checker);
-        
-        for(Checker checker : blackCheckers)
-            addCheckerHandlers(checker);
-    }
-    
-    private void addCheckerHandlers(Checker checker) {
-        EventHandler<MouseEvent> eventHandler = new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                System.out.println(nextTurn);
-                if(!nextTurn.ownsChecker(checker))
-                    return;
-                
-                clearTileHandlers();
-                resetTileColours();
-                
-                checker.calculatePossibleMoves();
-                checker.showPossibleMoves();
-                checker.getPossibleMoves().forEach((tile) -> {
-                    addTileHandlers(tile, checker);
-                });
-            }
-        };         
-       
-        checker.addEventFilter(MouseEvent.MOUSE_CLICKED, eventHandler);
-    }
-    
-    private void addTileHandlers(Tile tile, Checker checker) {      
-        
-        EventHandler<MouseEvent> moveHandler = new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                moveChecker(checker, tile);
-            }
-        };
-        
-        tile.addEventFilter(MouseEvent.MOUSE_CLICKED, moveHandler);
-        tileFilters.put(tile, moveHandler);
-    }
-    
-    private void moveChecker(Checker checker, Tile tile) {
-        move(checker, tile);
-        
-        if(checker.isTakingMove(tile)) {
-            capture(checker, tile);
-        }
-        
-        if(checker.inKingsRow()) {
-            checker.crown();
-        }        
-        
-        resetTileColours();                
-        clearTileHandlers();
-        switchTurn();
-        
-        checkGameFinished();
-    }
-    
-    private void move(Checker checker, Tile tile) {
-        checker.move(tile);
-        
-        getChildren().remove(checker);
-        add(checker, tile.x, tile.y);
-    }
-    
-    private void capture(Checker checker, Tile tile) {
-        checker.performTakingMove(tile);
-        for(Checker c : checker.getTakenCheckers(tile)) {
-            getChildren().remove(c);
-        }
-    }
-            
-    private void clearTileHandlers() {
-        if(tileFilters.isEmpty())
-            return;
-        
-        tileFilters.keySet().forEach((tile) -> {
-            tile.removeEventFilter(MouseEvent.MOUSE_CLICKED, tileFilters.get(tile));
-        });
-    }
-    
-    private void resetTileColours() {
+    public void resetTileColours() {
         for(Tile[] tileRow : Tile.TILES) {
             for(Tile tile : tileRow) {
                 tile.resetColour();
             }
         }
-    }
-    
-    private void switchTurn() {
-        if(nextTurn == humanPlayer) {
-            nextTurn = aiPlayer;
-        } else {
-            nextTurn = humanPlayer;
-        }
-    }
-    
-    private void checkGameFinished() {
-        if(humanPlayer.hasLost())
-            System.out.println(humanPlayer.colour + " has lost!");
-        
-        if(aiPlayer.hasLost())
-            System.out.println(aiPlayer.colour + " has lost!");
     }
 }
