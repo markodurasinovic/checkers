@@ -7,6 +7,7 @@ package checkers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Set;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -53,6 +54,14 @@ public class Checker extends Circle {
             return false;
         
         return !getTakenCheckers(tile).isEmpty();
+    }
+    
+    public boolean hasNonTakingMoves() {
+        return possibleMoves.containsValue(null);
+    }
+    
+    public void removeNonTakingMoves() {
+        possibleMoves.values().removeIf(Objects::isNull);
     }
         
     public void crown() {

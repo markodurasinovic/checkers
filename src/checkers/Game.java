@@ -26,7 +26,13 @@ public class Game {
         player2 = new AIPlayer(board.whiteCheckers, "white");
         nextTurn = player1;
         
+        calculateMoves();        
         addHandlers();
+    }
+    
+    private void calculateMoves() {
+        player1.calculateAllMoves();
+        player2.calculateAllMoves();
     }
     
         
@@ -42,7 +48,6 @@ public class Game {
                 clearTileHandlers();
                 board.resetTileColours();
                 
-                checker.calculatePossibleMoves();
                 checker.showPossibleMoves();
                 checker.getPossibleMoves().forEach((tile) -> {
                     addTileHandlers(tile, checker);
@@ -74,6 +79,8 @@ public class Game {
         switchTurn();        
         checkGameFinished();
         
+        calculateMoves();
+        
         if(nextTurn == player2) {
             performAiMove();
         }
@@ -104,10 +111,16 @@ public class Game {
     }
     
     private void capture(Checker checker, Tile tile) {
-        checker.performTakingMove(tile);
+        checker.performTakingMove(tile);        
         for(Checker c : checker.getTakenCheckers(tile)) {
             board.getChildren().remove(c);
-        }
+            
+            if(player1.ownsChecker(c)) {
+                player1.removeChecker(c);
+            } else {
+                player2.removeChecker(c);
+            }                
+        }        
     }
 
     public void clearTileHandlers() {

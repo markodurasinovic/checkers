@@ -23,16 +23,23 @@ public class AIPlayer extends Player {
     }
     
    public void calculateMove() {
-       for(Checker c : checkers) {
+       randomMove();
+   }
+   
+   public void randomMove() {
+       for(Checker c : allMoves.keySet()) {
            if(c.canMove()) {
                moveChecker = c;
                break;
            }
        }       
        
-       moveChecker.calculatePossibleMoves();
        Set<Tile> possibleMoves = moveChecker.getPossibleMoves();
        moveTile = (Tile) possibleMoves.toArray()[0];
+   }
+   
+   public void negamax() {
+       
    }
     
 }
