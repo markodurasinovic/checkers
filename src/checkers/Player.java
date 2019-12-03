@@ -6,9 +6,6 @@
 package checkers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  *
@@ -17,14 +14,14 @@ import java.util.Set;
 public class Player {
     ArrayList<Checker> checkers;
     String colour;
-    HashMap<Checker, ArrayList<Tile>> allMoves;
+    ArrayList<Move> allMoves;
     
     
     Player(ArrayList<Checker> checkers, String colour) {
         this.checkers = checkers;
         this.colour = colour;
         
-        allMoves = new HashMap<>();
+        allMoves = new ArrayList<>();
     }
     
     public boolean hasLost() {
@@ -52,18 +49,11 @@ public class Player {
         allMoves.clear();
         for(Checker c : checkers) {
             c.calculatePossibleMoves();
-            for(Tile moveTile : c.getPossibleMoves()) {
-                addMove(c, moveTile);
+            for(Move move : c.possibleMoves) {
+                allMoves.add(move);
             }
         }
         forceCaptureMoves();
-    }
-    
-    private void addMove(Checker checker, Tile tile) {
-        if(allMoves.get(checker) == null)
-            allMoves.put(checker, new ArrayList<>());
-        
-        allMoves.get(checker).add(tile);
     }
     
     private void forceCaptureMoves() {
@@ -71,26 +61,16 @@ public class Player {
             return;
         }
         
-        ArrayList<Checker> moveCheckers = new ArrayList<>();
-        for(Checker c : allMoves.keySet()) {
-            moveCheckers.add(c);
+        for(Checker c : checkers) {
+            c.possibleMoves.removeIf(Move::noCapture);
         }
-        
-        for(Checker c : moveCheckers) {
-            if(c.hasNonTakingMoves()) {
-                c.removeNonTakingMoves();
-                allMoves.remove(c);
-            }
-        }
-        
+        allMoves.removeIf(Move::noCapture);        
     }
     
     private boolean hasTakingMove() {
-        for(Checker moveChecker : allMoves.keySet()) {
-            for(Tile t : allMoves.get(moveChecker)) {
-                if(moveChecker.isTakingMove(t)) {
-                    return true;
-                }
+        for(Move m : allMoves) {
+            if(!m.noCapture()) {
+                return true;
             }
         }
         

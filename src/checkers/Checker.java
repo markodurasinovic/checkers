@@ -6,9 +6,6 @@
 package checkers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Set;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
@@ -23,7 +20,7 @@ public class Checker extends Circle {
     Color colour, opposingColour;
     boolean isKing;  
     
-    HashMap<Tile, ArrayList<Checker>> possibleMoves;
+    ArrayList<Move> possibleMoves;
         
     
     Checker(double radius, Paint fill, Tile tile) {
@@ -36,17 +33,23 @@ public class Checker extends Circle {
         
         isKing = false;
         
-        possibleMoves = new HashMap<>();
+        possibleMoves = new ArrayList<>();
     }
     
-    public void showPossibleMoves() {              
-        possibleMoves.keySet().forEach((tile) -> {
+    public void showPossibleMoves() {
+        ArrayList<Tile> possibleMoveTiles = getPossibleMoveTiles();
+        possibleMoveTiles.forEach((tile) -> {
             tile.setColour(Color.GREEN);
         });
     }
     
-    public Set<Tile> getPossibleMoves() {
-        return possibleMoves.keySet();
+    public ArrayList<Tile> getPossibleMoveTiles() {
+        ArrayList<Tile> possibleMoveTiles = new ArrayList<>();
+        for(Move m : possibleMoves) {
+            possibleMoveTiles.add(m.tile);
+        }
+        
+        return possibleMoveTiles;
     }
     
     public boolean isTakingMove(Tile tile) {
@@ -57,11 +60,22 @@ public class Checker extends Circle {
     }
     
     public boolean hasNonTakingMoves() {
-        return possibleMoves.containsValue(null);
+        for(Move m : possibleMoves) {
+            if(m.noCapture())
+                return true;
+        }
+        return false;
     }
     
     public void removeNonTakingMoves() {
-        possibleMoves.values().removeIf(Objects::isNull);
+        for(int i = 0; i < possibleMoves.size(); i++) {
+            if(possibleMoves.get(i).noCapture())
+                possibleMoves.remove(i);
+        }
+    }
+    
+    public void removeMove(Move move) {
+        possibleMoves.remove(move);
     }
         
     public void crown() {
@@ -170,12 +184,17 @@ public class Checker extends Circle {
     }
     
     private boolean alreadyVisited(Tile tile) {
-        return possibleMoves.keySet().contains(tile);
+        for(Move m : possibleMoves) {
+            if(m.tile == tile)
+                return true;
+        }
+        
+        return false;
     }
     
     private void addMove(Tile tile, Checker capturedChecker) {
         if(capturedChecker == null) {
-            possibleMoves.put(tile, null);
+            possibleMoves.add(new Move(this, tile));
         } else {
             addCaptureMove(tile, capturedChecker);
         }
@@ -184,19 +203,19 @@ public class Checker extends Circle {
     private void addCaptureMove(Tile previousTile, Checker capturedChecker) {
         Tile moveTile = previousTile.getAdjacentTile(capturedChecker.currentTile);
         
-        if(possibleMoves.get(moveTile) == null) {
-            possibleMoves.put(moveTile, new ArrayList<>());
+        if(getMove(moveTile) == null) {
+            possibleMoves.add(new Move(this, moveTile));
         }
         
-        ArrayList<Checker> capturedCheckers = possibleMoves.get(moveTile);
-        ArrayList<Checker> previouslyCapturedCheckers = possibleMoves.get(previousTile);
+        ArrayList<Checker> capturedCheckers = getTakenCheckers(moveTile);
+        ArrayList<Checker> previouslyCapturedCheckers = getTakenCheckers(previousTile);
         if(previouslyCapturedCheckers != null) {
             for(Checker cc : previouslyCapturedCheckers) {
                 capturedCheckers.add(cc);
             }
         }
         
-        possibleMoves.get(moveTile).add(capturedChecker);
+        getMove(moveTile).addCapture(capturedChecker);
     }      
     
     public void performTakingMove(Tile tile) {
@@ -211,7 +230,21 @@ public class Checker extends Circle {
     }
     
     public ArrayList<Checker> getTakenCheckers(Tile tile) {
-        return possibleMoves.get(tile);
+        if(getMove(tile) != null) {
+            return getMove(tile).capturedCheckers;
+        }
+        
+        return null;
+    }
+    
+    private Move getMove(Tile tile) {
+        for(Move m : possibleMoves) {
+            if(m.tile == tile) {
+                return m;
+            }
+        }
+        
+        return null;
     }
     
     public void move(Tile tile) {

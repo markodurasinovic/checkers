@@ -49,7 +49,7 @@ public class Game {
                 board.resetTileColours();
                 
                 checker.showPossibleMoves();
-                checker.getPossibleMoves().forEach((tile) -> {
+                checker.getPossibleMoveTiles().forEach((tile) -> {
                     addTileHandlers(tile, checker);
                 });
             }

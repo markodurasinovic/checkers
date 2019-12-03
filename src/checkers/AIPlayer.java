@@ -6,7 +6,6 @@
 package checkers;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 /**
  *
@@ -27,14 +26,14 @@ public class AIPlayer extends Player {
    }
    
    public void randomMove() {
-       for(Checker c : allMoves.keySet()) {
-           if(c.canMove()) {
-               moveChecker = c;
+       for(Move m : allMoves) {
+           if(m.checker.canMove()) {
+               moveChecker = m.checker;
                break;
            }
        }       
        
-       Set<Tile> possibleMoves = moveChecker.getPossibleMoves();
+       ArrayList<Tile> possibleMoves = moveChecker.getPossibleMoveTiles();
        moveTile = (Tile) possibleMoves.toArray()[0];
    }
    
