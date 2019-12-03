@@ -7,8 +7,6 @@ package checkers;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import javafx.event.EventHandler;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
@@ -18,18 +16,30 @@ import javafx.scene.shape.Rectangle;
  * @author Marko
  */
 public class Tile extends Rectangle {
-    Board board;
     Checker checker;
     int x, y;
-    static Tile[][] TILES = new Tile[8][8];
+    Tile[][] tiles;
     Paint originalColour, colour;
     
-    Tile(double width, double height, Paint fill, int x, int y) {
+    double width, height;
+    
+    Tile(double width, double height, Paint fill, int x, int y, Tile[][] tiles) {
         super(width, height, fill);
+        this.width = width;
+        this.height = height;
+        
         this.x = x;
         this.y = y;
         originalColour = (Color) fill;
         colour = (Color) fill;
+        
+        this.tiles = tiles;
+    }
+    
+    public Tile deepCopy(Tile[][] tiles) {
+        Tile copy = new Tile(width, height, colour, x, y, tiles);
+        
+        return copy;
     }
     
     public void placeChecker(Checker c) {
@@ -63,9 +73,9 @@ public class Tile extends Rectangle {
         return getTile(tile.x + horDir, tile.y + vertDir);
     }
     
-    static public Tile getTile(int x, int y) {
+    public Tile getTile(int x, int y) {
         if(x < 8 && y < 8 && x > -1 && y > -1) {
-            return TILES[x][y];
+            return tiles[x][y];
         }
         
         return null;

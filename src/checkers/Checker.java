@@ -19,12 +19,14 @@ public class Checker extends Circle {
     boolean movingUp;
     Color colour, opposingColour;
     boolean isKing;  
+    double radius;
     
     ArrayList<Move> possibleMoves;
         
     
     Checker(double radius, Paint fill, Tile tile) {
         super(radius, fill);
+        this.radius = radius;
         currentTile = tile;
         
         movingUp = fill == Color.BLUE;
@@ -34,6 +36,13 @@ public class Checker extends Circle {
         isKing = false;
         
         possibleMoves = new ArrayList<>();
+    }
+    
+    public Checker deepCopy() {
+        Checker copy = new Checker(radius, colour, currentTile);
+        copy.isKing = isKing;
+        
+        return copy;
     }
     
     public void showPossibleMoves() {
@@ -65,17 +74,6 @@ public class Checker extends Circle {
                 return true;
         }
         return false;
-    }
-    
-    public void removeNonTakingMoves() {
-        for(int i = 0; i < possibleMoves.size(); i++) {
-            if(possibleMoves.get(i).noCapture())
-                possibleMoves.remove(i);
-        }
-    }
-    
-    public void removeMove(Move move) {
-        possibleMoves.remove(move);
     }
         
     public void crown() {
