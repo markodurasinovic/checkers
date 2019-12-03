@@ -6,6 +6,7 @@
 package checkers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  *
@@ -20,8 +21,8 @@ public class Move {
     ArrayList<Move> children;
     
     // state representation
-    ArrayList<Checker> whiteCheckers;
-    ArrayList<Checker> blackCheckers;
+    ArrayList<Checker> whiteCheckers = new ArrayList<>();
+    ArrayList<Checker> blackCheckers = new ArrayList<>();
     Tile[][] tiles = new Tile[8][8];
     // ====================
     
@@ -32,6 +33,12 @@ public class Move {
         
         parent = null;
         children = new ArrayList<>();
+    }
+    
+    public void printState() {
+        System.out.println(Arrays.toString(tiles));
+        System.out.println(whiteCheckers);
+        System.out.println(blackCheckers);
     }
     
     public void addData(Tile[][] oTiles, ArrayList<Checker> oWhiteCheckers, ArrayList<Checker> oBlackCheckers) {

@@ -6,6 +6,7 @@
 package checkers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  *
@@ -15,13 +16,13 @@ public class AIPlayer extends Player {
     Checker moveChecker;
     Tile moveTile;
     
-    Tile[][] simulatedTiles = new Tile[8][8];
-    Tile[][] tempTiles;
-    ArrayList<Checker> mySimulatedCheckers = new ArrayList<>();
-    ArrayList<Checker> enemySimulatedCheckers = new ArrayList<>();    
+//    Tile[][] simulatedTiles = new Tile[8][8];
+//    Tile[][] tempTiles;
+//    ArrayList<Checker> mySimulatedCheckers = new ArrayList<>();
+//    ArrayList<Checker> enemySimulatedCheckers = new ArrayList<>();    
     Player opponent;
     
-    AIPlayer(ArrayList<Checker> checkers, String colour, Player opponent, Board board) {
+    AIPlayer(ArrayList<Checker> checkers, String colour, Player opponent) {
         super(checkers, colour);
         this.opponent = opponent;
         moveChecker = null;
@@ -84,6 +85,16 @@ public class AIPlayer extends Player {
        
        ArrayList<Tile> possibleMoves = moveChecker.getPossibleMoveTiles();
        moveTile = (Tile) possibleMoves.toArray()[0];
+       
+       Move move = moveChecker.possibleMoves.get(0);
+       /////
+       move.addData(Board.tiles, checkers, opponent.checkers);
+       move.printState();
+       System.out.println("============");
+       System.out.println(Arrays.toString(Board.tiles));
+       System.out.println(checkers);
+       System.out.println(opponent.checkers);
+       /////
    }
    
    public void negamax() {

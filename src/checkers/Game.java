@@ -23,7 +23,7 @@ public class Game {
     Game() {
         board = new Board();
         player1 = new HumanPlayer(board.blackCheckers, "black");
-        player2 = new AIPlayer(board.whiteCheckers, "white", player1, board);
+        player2 = new AIPlayer(board.whiteCheckers, "white", player1);
         nextTurn = player1;
         
         calculateMoves();        
