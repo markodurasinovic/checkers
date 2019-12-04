@@ -14,7 +14,7 @@ import javafx.scene.paint.Color;
  * @author Marko
  */
 public class Board extends GridPane {
-    ArrayList<Checker> blackCheckers = new ArrayList<>();
+    ArrayList<Checker> blueCheckers = new ArrayList<>();
     ArrayList<Checker> whiteCheckers = new ArrayList<>();
     
     static public Tile[][] tiles = new Tile[8][8];
@@ -22,7 +22,7 @@ public class Board extends GridPane {
     Board() {        
         draw();
         populate();
-        paint();
+        showCheckers();
     }
     
     private void draw() {
@@ -30,7 +30,7 @@ public class Board extends GridPane {
             for(int j = 0; j < 8; j++) {
                 if(i % 2 == 0) {
                     if(j % 2 == 0) {
-                        addTile("white", i, j);
+                        addTile("red", i, j);
                     } else {
                         addTile("black", i, j);
                     }
@@ -38,7 +38,7 @@ public class Board extends GridPane {
                     if(j % 2 == 0) {
                         addTile("black", i, j);
                     } else {
-                        addTile("white", i, j);
+                        addTile("red", i, j);
                     }
                 }
             }
@@ -62,10 +62,10 @@ public class Board extends GridPane {
             for(int j = 0; j < 8; j++) {
                 if(i % 2 == 0) {
                     if(j % 2 == 1)
-                        addChecker("black", j, i);
+                        addChecker("blue", j, i);
                 } else {
                     if(j % 2 == 0)
-                        addChecker("black", j, i);
+                        addChecker("blue", j, i);
                 }
             }
         }
@@ -73,7 +73,7 @@ public class Board extends GridPane {
     
     private void addTile(String colour, int x, int y) {
         Color tileColour = Color.BLACK;
-        if(colour.equals("white"))
+        if(colour.equals("red"))
             tileColour = Color.RED;
         
         Tile tile = new Tile(75, 75, tileColour, x, y, tiles);
@@ -90,15 +90,14 @@ public class Board extends GridPane {
         Checker checker = new Checker(75/2, checkerColour, tile);        
         tile.placeChecker(checker);
         
-        //fix this up
-        if(colour.equals("black")) {
-            blackCheckers.add(checker);
+        if(colour.equals("blue")) {
+            blueCheckers.add(checker);
         } else {
             whiteCheckers.add(checker);
         }
     }
     
-    public void paint() {        
+    public void showCheckers() {        
         for(Tile[] tileRow : tiles) {
             for(Tile tile : tileRow) {
                 if(tile.hasChecker()) {

@@ -22,7 +22,7 @@ public class Game {
     
     Game() {
         board = new Board();
-        player1 = new HumanPlayer(board.blackCheckers, "black");
+        player1 = new HumanPlayer(board.blueCheckers, "blue");
         player2 = new AIPlayer(board.whiteCheckers, "white", player1);
         nextTurn = player1;
         
@@ -87,8 +87,8 @@ public class Game {
     }
     
     private void performAiMove() {
-        player2.calculateMove();
-        performMove(player2.moveChecker, player2.moveTile);
+        Move mv = player2.getMove();
+        performMove(mv.checker, mv.tile);
     }
     
     private void moveChecker(Checker checker, Tile tile) {
