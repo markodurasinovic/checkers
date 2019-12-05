@@ -192,6 +192,7 @@ public class CheckersGUI extends Application {
                 + "- Regular (non-king) checkers may only move forward\n"
                 + "- A checker making a non-capturing move may only move one tile\n"
                 + "- A checker making a capturing move may jump over the opposing checker landing on its other side\n"
+                + "- If a player can make a capturing move, then the player must make a capturing move\n"
                 + "- Multiple capturing moves may be made in a single turn\n"
                 + "- When a checker reaches the edge furthest from its starting point, it becomes a king\n"
                 + "- Kings may move forward and backward (including capturing forwards and backwards)\n"

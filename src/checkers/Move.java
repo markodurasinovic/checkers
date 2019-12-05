@@ -21,7 +21,6 @@ public class Move {
     ArrayList<Checker> whiteCheckers = new ArrayList<>();
     ArrayList<Checker> blueCheckers = new ArrayList<>();
     Tile[][] tiles = new Tile[8][8];
-    boolean visited = false;
 
     /**
      * Create a new Move object, containing the checker which is moving and the
@@ -95,9 +94,24 @@ public class Move {
                 break;
             }
         }
-        node.children.removeIf(Move::notVisited);
+        node.children.clear();
 
         return bestVal;
+    }
+    
+     /**
+     * Simulates this move so that subsequent child moves can be calculated.
+     */
+    private void simulateMove() {
+        simChecker.move(simTile);
+
+        if (simChecker.isCapturingMove(simTile)) {
+            capture(simChecker, simTile);
+        }
+
+        if (simChecker.inKingsRow()) {
+            simChecker.crown();
+        }
     }
 
     /**
@@ -142,21 +156,6 @@ public class Move {
         }
 
         return false;
-    }
-
-    /**
-     * Simulates this move so that subsequent child moves can be calculated.
-     */
-    private void simulateMove() {
-        simChecker.move(simTile);
-
-        if (simChecker.isCapturingMove(simTile)) {
-            capture(simChecker, simTile);
-        }
-
-        if (simChecker.inKingsRow()) {
-            simChecker.crown();
-        }
     }
 
     /**
@@ -238,12 +237,7 @@ public class Move {
      * @return
      */
     private int evaluateState() {
-        visited = true;
         return getCheckerValue(whiteCheckers) - getCheckerValue(blueCheckers);
-    }
-
-    public boolean notVisited() {
-        return !visited;
     }
 
     /**
