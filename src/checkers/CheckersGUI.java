@@ -13,10 +13,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- * CheckersGame is the main class of this application. It presents a GUI using
+ * CheckersGUI is the main class of this application. It presents a GUI using
  * JavaFX.
  */
-public class CheckersGame extends Application {
+public class CheckersGUI extends Application {
 
     static Stage primaryStage;
 
@@ -36,7 +36,7 @@ public class CheckersGame extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
-        CheckersGame.primaryStage = primaryStage;
+        CheckersGUI.primaryStage = primaryStage;
         primaryStage.setTitle("Checkers");
 
         launchScreen(primaryStage);

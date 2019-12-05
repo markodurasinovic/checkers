@@ -158,12 +158,12 @@ public class Game {
      */
     private boolean gameFinished() {
         if (player1.hasLost()) {
-            CheckersGame.gameOver("You lost!");
+            CheckersGUI.gameOver("You lost!");
             return true;
         }
 
         if (player2.hasLost()) {
-            CheckersGame.gameOver("You won!");
+            CheckersGUI.gameOver("You won!");
             return true;
         }
 
