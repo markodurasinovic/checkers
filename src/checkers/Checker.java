@@ -222,8 +222,11 @@ public class Checker extends Circle {
             if(checker.isKing)
                 crown();
             //
+            if(checker.currentTile == null) {
+                System.out.println("YOOOO");
+            }
             checker.currentTile.removeChecker();
-            checker.currentTile = null;            
+            checker.currentTile = null;
         }
     }
     
@@ -250,7 +253,10 @@ public class Checker extends Circle {
             currentTile.removeChecker();
             currentTile = tile;
             currentTile.placeChecker(this);
-        }        
+        }
+        
+        if(inKingsRow())
+            crown();
     }    
     
     public boolean isBlue() {

@@ -20,10 +20,10 @@ public class Game {
     AIPlayer player2;
     HashMap<Tile, EventHandler> tileFilters = new HashMap<>();
     
-    Game() {
+    Game(String difficulty) {
         board = new Board();
         player1 = new HumanPlayer(board.blueCheckers, "blue");
-        player2 = new AIPlayer(board.whiteCheckers, "white", player1);
+        player2 = new AIPlayer(board.whiteCheckers, "white", player1, difficulty);
         nextTurn = player1;
         
         calculateMoves();        
@@ -96,10 +96,6 @@ public class Game {
         
         if(checker.isTakingMove(tile)) {
             capture(checker, tile);
-        }
-        
-        if(checker.inKingsRow()) {
-            checker.crown();
         }
     }
     

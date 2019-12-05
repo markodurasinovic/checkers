@@ -76,7 +76,7 @@ public class Board extends GridPane {
         if(colour.equals("red"))
             tileColour = Color.RED;
         
-        Tile tile = new Tile(75, 75, tileColour, x, y, tiles);
+        Tile tile = new Tile(100, 100, tileColour, x, y, tiles);
         add(tile, x, y);
         tiles[x][y] = tile;
     }
@@ -87,7 +87,7 @@ public class Board extends GridPane {
             checkerColour = Color.WHITE;
         
         Tile tile = tiles[x][y];
-        Checker checker = new Checker(75/2, checkerColour, tile);        
+        Checker checker = new Checker(100/2, checkerColour, tile);        
         tile.placeChecker(checker);
         
         if(colour.equals("blue")) {

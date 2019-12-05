@@ -6,7 +6,6 @@
 package checkers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -16,69 +15,59 @@ import java.util.HashMap;
 public class AIPlayer extends Player {
     Checker moveChecker;
     Tile moveTile;
-    
-//    Tile[][] simulatedTiles = new Tile[8][8];
-//    Tile[][] tempTiles;
-//    ArrayList<Checker> mySimulatedCheckers = new ArrayList<>();
-//    ArrayList<Checker> enemySimulatedCheckers = new ArrayList<>();    
+    String difficulty;  
     Player opponent;
     HashMap<Move, Integer> moveScores = new HashMap<>();
     
-    AIPlayer(ArrayList<Checker> checkers, String colour, Player opponent) {
+    AIPlayer(ArrayList<Checker> checkers, String colour, Player opponent, String difficulty) {
         super(checkers, colour);
         this.opponent = opponent;
         moveChecker = null;
         moveTile = null;
+        this.difficulty = difficulty;
     }
     
     public Move getMove() {
-        evaluateMoves();
-        return getBestMove();
-    }
-    
-    private void evaluateMoves() {
-        moveScores.clear();
-        for(Move m : allMoves) {
-            m.addData(Board.tiles, checkers, opponent.checkers);
-            moveScores.put(m, m.evaluateMove(3));
+        switch(difficulty) {
+            case "Easy":
+                return getBestMove(0);
+            case "Medium":
+                return getBestMove(2);
+            case "Hard":
+                return getBestMove(7);
+            default:
+                return randomMove();
         }
     }
     
-    public Move getBestMove() {
+    public Move getBestMove(int depth) {
+        evaluateMoves(depth);
+        
         Move bestMove = allMoves.get(0);
         for(Move m : moveScores.keySet()) {
             if(moveScores.get(m) > moveScores.get(bestMove))
                 bestMove = m;
         }
+        System.out.println("bestmove score: " + moveScores.get(bestMove));
         
         return bestMove;
     }
+    
+    private void evaluateMoves(int depth) {
+        moveScores.clear();
+        for(Move m : allMoves) {
+            m.addData(Board.tiles, checkers, opponent.checkers);
+            moveScores.put(m, m.evaluateMove(depth));
+        }
+    }
    
-    public void randomMove() {
+    public Move randomMove() {
        for(Move m : allMoves) {
            if(m.checker.canMove()) {
-               moveChecker = m.checker;
-               break;
+               return m;
            }
-       }       
+       }
        
-       ArrayList<Tile> possibleMoves = moveChecker.getPossibleMoveTiles();
-       moveTile = (Tile) possibleMoves.toArray()[0];
-       
-       Move move = moveChecker.possibleMoves.get(0);
-       /////
-       move.addData(Board.tiles, checkers, opponent.checkers);
-       System.out.println(move.evaluateMove(3));
-//       move.printState();
-//       System.out.println("============");
-//       System.out.println(Arrays.toString(Board.tiles));
-//       System.out.println(checkers);
-//       System.out.println(opponent.checkers);
-       /////
-   }
-   
-    public void negamax() {
-       
-    }
-    
+       return null;
+   }      
 }

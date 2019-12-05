@@ -16,7 +16,10 @@ import java.util.HashMap;
 public class Move {
     Checker checker;
     Tile tile;
-    ArrayList<Checker> capturedCheckers;    
+    ArrayList<Checker> capturedCheckers;  
+    
+    int maxEver;
+    int movesConsidered;
     
     Move parent;
     ArrayList<Move> children;
@@ -30,6 +33,8 @@ public class Move {
     // ====================
     HashMap<Integer, ArrayList<Move>> movesAtDepth = new HashMap<>();
     
+    boolean visited = false;
+    
     Move(Checker checker, Tile tile) {
         this.checker = checker;
         this.tile = tile;
@@ -40,7 +45,11 @@ public class Move {
     }
     
     public int evaluateMove(int depth) {
-        return minimax(this, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
+        movesConsidered = 0;
+        int val = negamax(this, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
+        System.out.println("moves considered: " + movesConsidered);
+        
+        return val;
     }
     
     private Checker getChecker(Checker checker) {
@@ -63,50 +72,55 @@ public class Move {
         return tiles[tile.x][tile.y];
     }
     
-//     player = 1 for AI, 0 for Human
-    private int minimax(Move node, int depth, int alpha, int beta, int player) {
-        performMove(simChecker, simTile);
-                
-        if(depth == 0) {
-            return node.evaluateState();
-        }
-                
+    private int negamax(Move node, int depth, int alpha, int beta, int player) {
+        movesConsidered++;
+        node.simulateMove();
+        if(node.winningMove()) 
+            return Integer.MAX_VALUE;
+        
+        if(node.losingMove())
+            return Integer.MIN_VALUE;
+        
+        if(depth == 0)
+            return node.evaluateState() * player;
+        
         if(player == 1) {
-            int bestVal = Integer.MIN_VALUE;
-            getAllMoves(blueCheckers);
-            for(int i = 0; i < Math.min(children.size(), depth + 5); i++) {
-                Move child = children.get(i);
-                int val = minimax(child, depth - 1, alpha, beta, 0);
-                bestVal = Math.max(bestVal, val);
-                alpha = Math.max(val, alpha);                
-                if(alpha >= beta)
-                    break;
-            }
-            return bestVal;
+            node.getAllMoves(blueCheckers);
         } else {
-            int bestVal = Integer.MAX_VALUE;
-            getAllMoves(whiteCheckers);
-            for(int i = 0; i < Math.min(children.size(), depth + 5); i++) {
-                Move child = children.get(i);
-                int val = minimax(child, depth - 1, alpha, beta, 1);
-                bestVal = Math.min(bestVal, val);
-                beta = Math.min(val, beta);
-                if(alpha >= beta)
-                    break;
-            }
-            return bestVal;
-        }        
-    }
-        
-    private void performMove(Checker checker, Tile tile) {
-        checker.move(tile);
-        
-        if(checker.isTakingMove(tile)) {
-            capture(checker, tile);
+            node.getAllMoves(whiteCheckers);
         }
         
-        if(checker.inKingsRow()) {
-            checker.crown();
+        int bestVal = Integer.MIN_VALUE;
+        for(int i = 0; i < node.children.size(); i++) {
+            Move child = node.children.get(i);
+            int val = -node.negamax(child, depth - 1, -beta, -alpha, -player);
+            bestVal = Math.max(bestVal, val);
+            alpha = Math.max(alpha, val);
+            if(alpha >= beta)
+                break;
+        }
+        node.children.removeIf(Move::notVisited);
+        
+        return bestVal;
+    }
+    
+    private boolean winningMove() {
+        return blueCheckers.isEmpty();
+    }
+    
+    private boolean losingMove() {
+        return whiteCheckers.isEmpty();
+    }
+    
+    private void simulateMove() {
+        simChecker.move(simTile);
+        
+        if(simChecker.isTakingMove(simTile)) {
+            capture(simChecker, simTile);
+        }
+        
+        if(simChecker.inKingsRow()) {
+            simChecker.crown();
         }
     }
         
@@ -157,7 +171,12 @@ public class Move {
     }
     
     private int evaluateState() {
+        visited = true;
         return getCheckerValue(whiteCheckers) - getCheckerValue(blueCheckers);
+    }
+    
+    public boolean notVisited() {
+        return !visited;
     }
     
     private int getCheckerValue(ArrayList<Checker> checkers) {
@@ -166,7 +185,7 @@ public class Move {
             
             value += 1;
             if(c.isKing)
-                value += 2;
+                value += 100;
         }
         return value;
     }
