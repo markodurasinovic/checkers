@@ -1,273 +1,383 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package checkers;
 
 import java.util.ArrayList;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
+import javafx.scene.paint.*;
 import javafx.scene.shape.Circle;
 
 /**
- *
- * @author Marko
+ * Checker objects hold information which assists the calculation of each move
+ * available to the checker for a particular game state. It provides methods to
+ * calculate the moves available to the checker. In combination with Tile
+ * objects, Checker objects represent the state of the game.
  */
 public class Checker extends Circle {
+
     Tile currentTile;
     boolean movingUp;
     Color colour, opposingColour;
-    boolean isKing;  
     double radius;
-    
-    ArrayList<Move> possibleMoves;
-        
-    
+    boolean isKing = false;
+    ArrayList<Move> possibleMoves = new ArrayList<>();
+
+    /**
+     * Creates a checker of specified size and colour. Associates it to the tile
+     * which it is initially placed on.
+     *
+     * @param radius : Radius of the checker to be seen in the GUI.
+     * @param fill : Colour of the checker in the GUI.
+     * @param tile : Tile which the checker is placed on.
+     */
     Checker(double radius, Paint fill, Tile tile) {
         super(radius, fill);
         this.radius = radius;
         currentTile = tile;
-        
         movingUp = fill == Color.BLUE;
         opposingColour = fill == Color.BLUE ? Color.WHITE : Color.BLUE;
         colour = (Color) fill;
-        
-        isKing = false;
-        
-        possibleMoves = new ArrayList<>();
     }
-    
+
+    /**
+     * Creates an identical copy of this checker.
+     *
+     * @return A checker.
+     */
     public Checker deepCopy() {
         Checker copy = new Checker(radius, colour, currentTile);
         copy.isKing = isKing;
-        
+
         return copy;
     }
-    
+
+    /**
+     * Highlight this checker's possible moves in the GUI.
+     */
     public void showPossibleMoves() {
         ArrayList<Tile> possibleMoveTiles = getPossibleMoveTiles();
         possibleMoveTiles.forEach((tile) -> {
             tile.setColour(Color.GREEN);
         });
     }
-    
+
+    /**
+     * Retrieve all tiles which this checker can move to.
+     *
+     * @return ArrayList of tiles.
+     */
     public ArrayList<Tile> getPossibleMoveTiles() {
         ArrayList<Tile> possibleMoveTiles = new ArrayList<>();
-        for(Move m : possibleMoves) {
+        possibleMoves.forEach((m) -> {
             possibleMoveTiles.add(m.tile);
-        }
-        
+        });
+
         return possibleMoveTiles;
     }
-    
-    public boolean isTakingMove(Tile tile) {
-        if(getTakenCheckers(tile) == null)
-            return false;
-        
-        return !getTakenCheckers(tile).isEmpty();
-    }
-    
-    public boolean hasNonTakingMoves() {
-        for(Move m : possibleMoves) {
-            if(m.noCapture())
-                return true;
-        }
-        return false;
-    }
-        
-    public void crown() {
-        isKing = true;
-        if(colour == Color.BLUE) {
-            setColour(Color.DARKBLUE);
-        } else {
-            setColour(Color.GRAY);
-        }
-    }
-    
-    private void setColour(Color colour) {
-        setFill(colour);
-    }
-    
+
+    /**
+     * Check if checker has a move.
+     *
+     * @return T/F
+     */
     public boolean canMove() {
         calculatePossibleMoves();
-        
+
         return !possibleMoves.isEmpty();
-    }     
-    
+    }
+
+    /**
+     * Calculates all possible moves for this checker. All moves are added to
+     * possibleMoves.
+     */
     public void calculatePossibleMoves() {
         possibleMoves.clear();
         calculateMovesForTile(currentTile);
     }
-    
+
+    /**
+     * Calculate all possible moves for the checker from this tile.
+     *
+     * @param tile : Tile to move from.
+     */
     private void calculateMovesForTile(Tile tile) {
-        if(tile == null)
+        if (tile == null) {
             return;
-        
+        }
+
         ArrayList<Checker> enemyNeighbours = getEnemyNeighbours(tile);
-        if(enemyNeighbours.isEmpty() || 
-           !hasTakingMove(tile, enemyNeighbours) && !isTakingMove(tile)) {
+        if (enemyNeighbours.isEmpty()
+                || !hasCapturingMove(tile) && !isCapturingMove(tile)) {
             addForwardMove(tile);
         } else {
-            enemyNeighbours.forEach((Checker c) -> {                
-                if(canTake(tile, c)) {
-                   addMove(tile, c);
-                   Tile nextMoveTile = tile.getAdjacentTile(c.currentTile);
-                   calculateMovesForTile(nextMoveTile);
-               }
-            });  
-        }     
-    }
-    
-    private boolean hasTakingMove(Tile fromTile, ArrayList<Checker> enemyNeighbours) {
-        for(Checker c : enemyNeighbours) {
-            if(canTake(fromTile, c))
-                return true;
-        }
-        
-        return false;
-    }
-    
-    private void addForwardMove(Tile tile) {
-        ArrayList<Tile> surroundingTiles = tile.getSurroundingTiles();
-        if(isKing) {
-            surroundingTiles.forEach((Tile t) -> {
-                if(!t.hasChecker())
-                    addMove(t, null);
+            enemyNeighbours.forEach((Checker c) -> {
+                if (canCapture(tile, c)) {
+                    addMove(tile, c);
+                    Tile nextMoveTile = tile.getAdjacentTile(c.currentTile);
+                    calculateMovesForTile(nextMoveTile);
+                }
             });
-        } else {
-            if(movingUp) {
-                surroundingTiles.forEach((Tile t) -> {
-                    if(tile.y > t.y && !t.hasChecker())
-                            addMove(t, null);
-                });
-            } else {
-                surroundingTiles.forEach((Tile t) -> {
-                    if(tile.y < t.y && !t.hasChecker())
-                        addMove(t, null);
-                });
+        }
+    }
+
+    /**
+     * Check if this checker can capture any opposing checkers surrounding this
+     * tile.
+     *
+     * @param fromTile : Tile to check for opposing neighbours which can be
+     * captured.
+     * @return T/F
+     */
+    private boolean hasCapturingMove(Tile tile) {
+        ArrayList<Checker> enemyNeighbours = getEnemyNeighbours(tile);
+        for (Checker c : enemyNeighbours) {
+            if (canCapture(tile, c)) {
+                return true;
             }
         }
+
+        return false;
     }
-    
+
     private ArrayList<Checker> getEnemyNeighbours(Tile tile) {
         ArrayList<Checker> neighbours = new ArrayList<>();
         ArrayList<Tile> neighbourTiles = tile.getSurroundingTiles();
-        
+
         neighbourTiles.forEach((Tile t) -> {
-            if(t.hasChecker() && t.checker.colour == opposingColour)
+            if (t.hasChecker() && t.checker.colour == opposingColour) {
                 neighbours.add(t.checker);
+            }
         });
-        
+
         return neighbours;
     }
-    
-    private boolean canTake(Tile fromTile, Checker checker) {
-        Tile moveTile = fromTile.getAdjacentTile(checker.currentTile);        
-        
-        if(moveTile != null && !moveTile.hasChecker()) {
-            if(isKing && !alreadyVisited(moveTile))
-                return true;
-            
-            if(movingUp) {
-                if(fromTile.y > checker.currentTile.y)
-                    return true;
+
+    /**
+     * Check if a move ending at this tile is a capturing move.
+     *
+     * @param tile : Tile to move to.
+     * @return T/F
+     */
+    public boolean isCapturingMove(Tile tile) {
+        if (getTakenCheckers(tile) == null) {
+            return false;
+        }
+
+        return !getTakenCheckers(tile).isEmpty();
+    }
+
+    /**
+     * Adds available forward-moves for the checker.
+     *
+     * @param tile : Tile to move from.
+     */
+    private void addForwardMove(Tile tile) {
+        ArrayList<Tile> surroundingTiles = tile.getSurroundingTiles();
+        if (isKing) {
+            surroundingTiles.forEach((Tile t) -> {
+                if (!t.hasChecker()) {
+                    addMove(t, null);
+                }
+            });
+        } else {
+            if (movingUp) {
+                surroundingTiles.forEach((Tile t) -> {
+                    if (tile.y > t.y && !t.hasChecker()) {
+                        addMove(t, null);
+                    }
+                });
             } else {
-                if(fromTile.y < checker.currentTile.y)
-                    return true;
+                surroundingTiles.forEach((Tile t) -> {
+                    if (tile.y < t.y && !t.hasChecker()) {
+                        addMove(t, null);
+                    }
+                });
             }
         }
-        
-        return false;
     }
-    
-    private boolean alreadyVisited(Tile tile) {
-        for(Move m : possibleMoves) {
-            if(m.tile == tile)
+
+    /**
+     * Check if this checker can capture a specific checker from a specific
+     * tile.
+     *
+     * @param fromTile : Tile to perform the capturing move from.
+     * @param checker : Checker to capture.
+     * @return T/F
+     */
+    private boolean canCapture(Tile fromTile, Checker checker) {
+        Tile moveTile = fromTile.getAdjacentTile(checker.currentTile);
+        if (moveTile != null && !moveTile.hasChecker()) {
+            if (isKing && !alreadyVisited(moveTile)) {
                 return true;
+            }
+
+            if (movingUp) {
+                if (fromTile.y > checker.currentTile.y) {
+                    return true;
+                }
+            } else {
+                if (fromTile.y < checker.currentTile.y) {
+                    return true;
+                }
+            }
         }
-        
+
         return false;
     }
-    
+
+    /**
+     * Check if this tile has already been visited by a previously calculated
+     * move. (This fixes a bug where if a king does a multi-move capture, it is
+     * able to repeatedly move between the tiles passed on its capture without
+     * relinquishing control).
+     *
+     * @param tile : Tile to check for previous visitation.
+     * @return T/F
+     */
+    private boolean alreadyVisited(Tile tile) {
+        for (Move m : possibleMoves) {
+            if (m.tile == tile) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Create a Move and add it to possibleMoves.
+     *
+     * @param tile : Tile to move to.
+     * @param capturedChecker : Checker captured via this move.
+     */
     private void addMove(Tile tile, Checker capturedChecker) {
-        if(capturedChecker == null) {
+        if (capturedChecker == null) {
             possibleMoves.add(new Move(this, tile));
         } else {
             addCaptureMove(tile, capturedChecker);
         }
     }
-    
+
+    /**
+     * Adds a captured checker to the Move which captures it. Finds "moveTile" -
+     * the tile where capturing checker ends up after the capturing move.
+     * Creates a new Move containing the moveTile and checker doing the
+     * capturing.
+     *
+     * @param previousTile : Tile from which the checker was captured.
+     * @param capturedChecker : Checker which was captured.
+     */
     private void addCaptureMove(Tile previousTile, Checker capturedChecker) {
         Tile moveTile = previousTile.getAdjacentTile(capturedChecker.currentTile);
-        
-        if(getMove(moveTile) == null) {
+        if (getMove(moveTile) == null) {
             possibleMoves.add(new Move(this, moveTile));
         }
-        
+
         ArrayList<Checker> capturedCheckers = getTakenCheckers(moveTile);
         ArrayList<Checker> previouslyCapturedCheckers = getTakenCheckers(previousTile);
-        if(previouslyCapturedCheckers != null) {
-            for(Checker cc : previouslyCapturedCheckers) {
+        if (previouslyCapturedCheckers != null) {
+            for (Checker cc : previouslyCapturedCheckers) {
                 capturedCheckers.add(cc);
             }
         }
-        
+
         getMove(moveTile).addCapture(capturedChecker);
-    }      
-    
-    public void performTakingMove(Tile tile) {
-        for(Checker checker : getTakenCheckers(tile)) {
-            // regicide
-            if(checker.isKing)
-                crown();
-            //
-            if(checker.currentTile == null) {
-                System.out.println("YOOOO");
+    }
+
+    /**
+     * Gets checkers captured via the move of this checker ending at a tile.
+     *
+     * @param tile : Tile which the move ends on.
+     * @return An ArrayList of captured checkers (or null if no checkers
+     * captured via move)
+     */
+    public ArrayList<Checker> getTakenCheckers(Tile tile) {
+        if (getMove(tile) != null) {
+            return getMove(tile).capturedCheckers;
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets Move which ends at tile.
+     *
+     * @param tile : Tile at which the move ends.
+     * @return Move corresponding to tile.
+     */
+    private Move getMove(Tile tile) {
+        for (Move m : possibleMoves) {
+            if (m.tile == tile) {
+                return m;
             }
+        }
+
+        return null;
+    }
+
+    /**
+     * Checker performs a capturing move. If a king is captured, the capturing
+     * checker becomes king.
+     *
+     * @param tile : Tile to move to.
+     */
+    public void performCapturingMove(Tile tile) {
+        for (Checker checker : getTakenCheckers(tile)) {
+            if (checker.isKing) {
+                crown();
+            }
+
             checker.currentTile.removeChecker();
             checker.currentTile = null;
         }
     }
-    
-    public ArrayList<Checker> getTakenCheckers(Tile tile) {
-        if(getMove(tile) != null) {
-            return getMove(tile).capturedCheckers;
-        }
-        
-        return null;
-    }
-    
-    private Move getMove(Tile tile) {
-        for(Move m : possibleMoves) {
-            if(m.tile == tile) {
-                return m;
-            }
-        }
-        
-        return null;
-    }
-    
+
+    /**
+     * Moves checker to a tile.
+     *
+     * @param tile : Tile to move to.
+     */
     public void move(Tile tile) {
-        if(!tile.hasChecker()) {
+        if (!tile.hasChecker()) {
             currentTile.removeChecker();
             currentTile = tile;
             currentTile.placeChecker(this);
         }
-        
-        if(inKingsRow())
+
+        if (inKingsRow()) {
             crown();
-    }    
-    
-    public boolean isBlue() {
-        return colour == Color.BLUE;
+        }
     }
-    
+
+    /**
+     * Turn this checker into a king. The king can move backwards and forwards.
+     * White checkers are turned grey. Blue checkers are turned dark blue.
+     */
+    public void crown() {
+        isKing = true;
+        if (colour == Color.BLUE) {
+            setFill(Color.DARKBLUE);
+        } else {
+            setFill(Color.GRAY);
+        }
+    }
+
+    /**
+     * Checks if checker is in kings row (for crowning purposes).
+     *
+     * @return T/F
+     */
     public boolean inKingsRow() {
-        if(isBlue()) {
+        if (isBlue()) {
             return currentTile.y == 0;
         } else {
             return currentTile.y == 7;
         }
+    }
+
+    /**
+     * Checks if checker is blue.
+     *
+     * @return T/F
+     */
+    public boolean isBlue() {
+        return colour == Color.BLUE;
     }
 }
