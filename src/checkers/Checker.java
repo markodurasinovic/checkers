@@ -128,7 +128,7 @@ public class Checker extends Circle {
     private boolean hasCapturingMove(Tile tile) {
         ArrayList<Checker> enemyNeighbours = getEnemyNeighbours(tile);
         
-        return enemyNeighbours.stream().anyMatch((c) -> (canCapture(tile, c)));
+        return enemyNeighbours.stream().anyMatch((Checker c) -> (canCapture(tile, c)));
     }
 
     private ArrayList<Checker> getEnemyNeighbours(Tile tile) {
@@ -227,7 +227,7 @@ public class Checker extends Circle {
      * @return T/F
      */
     private boolean alreadyVisited(Tile tile) {
-        return possibleMoves.stream().anyMatch((m) -> (m.tile == tile));
+        return possibleMoves.stream().anyMatch((Move m) -> (m.tile == tile));
     }
 
     /**
@@ -262,8 +262,8 @@ public class Checker extends Circle {
         ArrayList<Checker> capturedCheckers = getTakenCheckers(moveTile);
         ArrayList<Checker> previouslyCapturedCheckers = getTakenCheckers(previousTile);
         if (previouslyCapturedCheckers != null) {
-            previouslyCapturedCheckers.forEach((cc) -> {
-                capturedCheckers.add(cc);
+            previouslyCapturedCheckers.forEach((Checker c) -> {
+                capturedCheckers.add(c);
             });
         }
 
