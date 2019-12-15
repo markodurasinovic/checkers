@@ -34,31 +34,13 @@ public class Game {
     }
 
     /**
-     * Calculate all the moves currently available to each player. If "Help" is
-     * turned on, highlights each tile which contains a moveable checker.
-     */
-    private void calculateMoves() {
-        player1.calculateAllMoves();
-        player2.calculateAllMoves();
-
-        if (helpOn) {
-            board.resetAllTileColours();
-            for (Move m : player1.allMoves) {
-                m.checker.currentTile.setColour(Color.YELLOW);
-            }
-        } else {
-            board.resetAllTileColours();
-        }
-    }
-
-    /**
      * Add event handlers to each human-player's checker. This allows the game
      * to be controlled through the GUI.
      */
     private void addHandlers() {
-        for (Checker checker : player1.checkers) {
-            addCheckerHandler(checker);
-        }
+        player1.checkers.forEach((Checker c) -> {
+            addCheckerHandler(c);
+        });
     }
 
     /**
@@ -83,8 +65,8 @@ public class Game {
                     checker.showPossibleMoves();
                 }
 
-                checker.getPossibleMoveTiles().forEach((tile) -> {
-                    addTileHandler(tile, checker);
+                checker.getPossibleMoveTiles().forEach((Tile t) -> {
+                    addTileHandler(t, checker);
                 });
             }
         };
@@ -158,12 +140,12 @@ public class Game {
      */
     private boolean gameFinished() {
         if (player1.hasLost()) {
-            CheckersGUI.gameOver("You lost!");
+            CheckersGUI.gameOver("You lost!\nPlay again?");
             return true;
         }
 
         if (player2.hasLost()) {
-            CheckersGUI.gameOver("You won!");
+            CheckersGUI.gameOver("You won!\nPlay again?");
             return true;
         }
 
@@ -180,13 +162,31 @@ public class Game {
             nextTurn = player1;
         }
     }
+    
+    /**
+     * Calculate all the moves currently available to each player. If "Help" is
+     * turned on, highlights each tile which contains a moveable checker.
+     */
+    private void calculateMoves() {
+        player1.calculateAllMoves();
+        player2.calculateAllMoves();
+
+        if (helpOn) {
+            board.resetAllTileColours();
+            player1.allMoves.forEach((Move m) -> {
+                m.checker.currentTile.setColour(Color.YELLOW);
+            });
+        } else {
+            board.resetAllTileColours();
+        }
+    }
 
     /**
      * Gets the AI player's move and performs it.
      */
     private void performAiMove() {
-        Move mv = player2.getMove();
-        performMove(mv.checker, mv.tile);
+        Move move = player2.getMove();
+        performMove(move.checker, move.tile);
     }
 
     /**

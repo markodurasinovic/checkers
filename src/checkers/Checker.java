@@ -53,8 +53,8 @@ public class Checker extends Circle {
      */
     public void showPossibleMoves() {
         ArrayList<Tile> possibleMoveTiles = getPossibleMoveTiles();
-        possibleMoveTiles.forEach((tile) -> {
-            tile.setColour(Color.GREEN);
+        possibleMoveTiles.forEach((Tile t) -> {
+            t.setColour(Color.GREEN);
         });
     }
 
@@ -65,7 +65,7 @@ public class Checker extends Circle {
      */
     public ArrayList<Tile> getPossibleMoveTiles() {
         ArrayList<Tile> possibleMoveTiles = new ArrayList<>();
-        possibleMoves.forEach((m) -> {
+        possibleMoves.forEach((Move m) -> {
             possibleMoveTiles.add(m.tile);
         });
 
@@ -127,13 +127,8 @@ public class Checker extends Circle {
      */
     private boolean hasCapturingMove(Tile tile) {
         ArrayList<Checker> enemyNeighbours = getEnemyNeighbours(tile);
-        for (Checker c : enemyNeighbours) {
-            if (canCapture(tile, c)) {
-                return true;
-            }
-        }
-
-        return false;
+        
+        return enemyNeighbours.stream().anyMatch((c) -> (canCapture(tile, c)));
     }
 
     private ArrayList<Checker> getEnemyNeighbours(Tile tile) {
@@ -232,13 +227,7 @@ public class Checker extends Circle {
      * @return T/F
      */
     private boolean alreadyVisited(Tile tile) {
-        for (Move m : possibleMoves) {
-            if (m.tile == tile) {
-                return true;
-            }
-        }
-
-        return false;
+        return possibleMoves.stream().anyMatch((m) -> (m.tile == tile));
     }
 
     /**
@@ -273,9 +262,9 @@ public class Checker extends Circle {
         ArrayList<Checker> capturedCheckers = getTakenCheckers(moveTile);
         ArrayList<Checker> previouslyCapturedCheckers = getTakenCheckers(previousTile);
         if (previouslyCapturedCheckers != null) {
-            for (Checker cc : previouslyCapturedCheckers) {
+            previouslyCapturedCheckers.forEach((cc) -> {
                 capturedCheckers.add(cc);
-            }
+            });
         }
 
         getMove(moveTile).addCapture(capturedChecker);

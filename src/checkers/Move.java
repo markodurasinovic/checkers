@@ -149,13 +149,7 @@ public class Move {
      * @return T/F
      */
     private boolean canMove(ArrayList<Checker> checkers) {
-        for (Checker c : checkers) {
-            if (c.canMove()) {
-                return true;
-            }
-        }
-
-        return false;
+        return checkers.stream().anyMatch((Checker c) -> (c.canMove()));
     }
 
     /**
@@ -166,13 +160,13 @@ public class Move {
      */
     private void capture(Checker checker, Tile tile) {
         checker.performCapturingMove(tile);
-        for (Checker c : checker.getTakenCheckers(tile)) {
+        checker.getTakenCheckers(tile).forEach((Checker c) -> {
             if (whiteCheckers.contains(c)) {
                 whiteCheckers.remove(c);
             } else {
                 blueCheckers.remove(c);
             }
-        }
+        });
     }
 
     /**
@@ -185,9 +179,9 @@ public class Move {
         ArrayList<Move> moves = new ArrayList<>();
         for (Checker c : checkers) {
             c.calculatePossibleMoves();
-            for (Move m : c.possibleMoves) {
+            c.possibleMoves.forEach((Move m) -> {
                 moves.add(m);
-            }
+            });
         }
         forceCaptureMoves(moves, checkers);
 
@@ -208,9 +202,9 @@ public class Move {
             return;
         }
 
-        for (Checker c : checkers) {
+        checkers.forEach((Checker c) -> {
             c.possibleMoves.removeIf(Move::noCapture);
-        }
+        });
         moves.removeIf(Move::noCapture);
     }
 
@@ -353,12 +347,13 @@ public class Move {
      * @param oBlueCheckers
      */
     private void deepCopyCheckers(ArrayList<Checker> oWhiteCheckers, ArrayList<Checker> oBlueCheckers) {
-        for (Checker c : oWhiteCheckers) {
+        oWhiteCheckers.forEach((Checker c) -> {
             whiteCheckers.add(c.deepCopy());
-        }
-        for (Checker c : oBlueCheckers) {
+        });
+        
+        oBlueCheckers.forEach((Checker c) -> {
             blueCheckers.add(c.deepCopy());
-        }
+        });
     }
 
     /**
@@ -371,6 +366,7 @@ public class Move {
             c.currentTile = tiles[x][y];
             tiles[x][y].placeChecker(c);
         }
+        
         for (Checker c : blueCheckers) {
             int x = c.currentTile.x;
             int y = c.currentTile.y;

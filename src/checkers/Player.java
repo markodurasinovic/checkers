@@ -41,13 +41,7 @@ public class Player {
      * @return T/F
      */
     private boolean canMove() {
-        for (Checker c : checkers) {
-            if (c.canMove()) {
-                return true;
-            }
-        }
-
-        return false;
+        return checkers.stream().anyMatch((Checker c) -> (c.canMove()));
     }
 
     /**
@@ -76,9 +70,9 @@ public class Player {
         allMoves.clear();
         for (Checker c : checkers) {
             c.calculatePossibleMoves();
-            for (Move move : c.possibleMoves) {
-                allMoves.add(move);
-            }
+            c.possibleMoves.forEach((Move m) -> {
+                allMoves.add(m);
+            });
         }
         forceCaptureMoves();
     }
@@ -91,9 +85,9 @@ public class Player {
             return;
         }
 
-        for (Checker c : checkers) {
+        checkers.forEach((Checker c) -> {
             c.possibleMoves.removeIf(Move::noCapture);
-        }
+        });
         allMoves.removeIf(Move::noCapture);
     }
 
@@ -103,12 +97,6 @@ public class Player {
      * @return T/F
      */
     private boolean hasCapturingMove() {
-        for (Move m : allMoves) {
-            if (!m.noCapture()) {
-                return true;
-            }
-        }
-
-        return false;
+        return allMoves.stream().anyMatch((Move m) -> (!m.noCapture()));
     }
 }

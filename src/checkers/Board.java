@@ -127,9 +127,9 @@ public class Board extends GridPane {
      */
     private void showCheckers() {
         for (Tile[] tileRow : tiles) {
-            for (Tile tile : tileRow) {
-                if (tile.hasChecker()) {
-                    add(tile.checker, tile.x, tile.y);
+            for (Tile t : tileRow) {
+                if (t.hasChecker()) {
+                    add(t.checker, t.x, t.y);
                 }
             }
         }
@@ -140,8 +140,8 @@ public class Board extends GridPane {
      */
     public void resetAllTileColours() {
         for (Tile[] tileRow : tiles) {
-            for (Tile tile : tileRow) {
-                tile.resetColour();
+            for (Tile t : tileRow) {
+                t.resetColour();
             }
         }
     }
@@ -151,9 +151,9 @@ public class Board extends GridPane {
      */
     public void resetMoveTileColours() {
         for (Tile[] tileRow : tiles) {
-            for (Tile tile : tileRow) {
-                if (!tile.hasChecker()) {
-                    tile.resetColour();
+            for (Tile t : tileRow) {
+                if (!t.hasChecker()) {
+                    t.resetColour();
                 }
             }
         }

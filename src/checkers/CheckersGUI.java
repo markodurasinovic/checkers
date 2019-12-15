@@ -53,9 +53,6 @@ public class CheckersGUI extends Application {
 
         setTitle(layout, "Checkers");
 
-        Button playButton = new Button("Play");
-        playButton.setMinWidth(200);
-        playButton.setMinHeight(50);
         EventHandler<MouseEvent> playHandler = new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -63,7 +60,7 @@ public class CheckersGUI extends Application {
             }
 
         };
-        playButton.addEventFilter(MouseEvent.MOUSE_CLICKED, playHandler);
+        Button playButton = addButton("Play", playHandler);
 
         VBox vbox = new VBox();
         vbox.getChildren().add(playButton);
@@ -94,13 +91,7 @@ public class CheckersGUI extends Application {
     static private void difficultyScreen() {
         BorderPane layout = new BorderPane();
 
-        setTitle(layout, "Choose a difficulty:");
-
-        Button[] options = new Button[]{
-            new Button("Easy"),
-            new Button("Medium"),
-            new Button("Hard")
-        };
+        setTitle(layout, "Choose a difficulty:");        
 
         EventHandler<MouseEvent> difficultyHandler = new EventHandler<MouseEvent>() {
             @Override
@@ -110,12 +101,12 @@ public class CheckersGUI extends Application {
                 launchGame(difficulty);
             }
         };
-
-        for (Button btn : options) {
-            btn.setMinWidth(200);
-            btn.setMinHeight(50);
-            btn.addEventFilter(MouseEvent.MOUSE_CLICKED, difficultyHandler);
-        }
+        
+        Button[] options = new Button[]{
+            addButton("Easy", difficultyHandler),
+            addButton("Medium", difficultyHandler),
+            addButton("Hard", difficultyHandler)
+        };
 
         VBox vbox = new VBox();
         vbox.setSpacing(30);
@@ -147,27 +138,21 @@ public class CheckersGUI extends Application {
         vbox.setSpacing(30);
         vbox.setAlignment(Pos.CENTER_RIGHT);
 
-        Button help = new Button("Help");
-        help.setMinWidth(200);
-        help.setMinHeight(50);
         EventHandler<MouseEvent> helpHandler = new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 game.toggleHelp();
             }
         };
-        help.addEventFilter(MouseEvent.MOUSE_CLICKED, helpHandler);
+        Button help = addButton("Help", helpHandler);
 
-        Button rules = new Button("Rules");
-        rules.setMinWidth(200);
-        rules.setMinHeight(50);
         EventHandler<MouseEvent> rulesHandler = new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 openRulesWindow();
             }
         };
-        rules.addEventFilter(MouseEvent.MOUSE_CLICKED, rulesHandler);
+        Button rules = addButton("Rules", rulesHandler);
 
         vbox.getChildren().add(help);
         vbox.getChildren().add(rules);
@@ -220,16 +205,15 @@ public class CheckersGUI extends Application {
         BorderPane layout = new BorderPane();
         setTitle(layout, gameOver);
 
-        Button yes = new Button("Yes");
-        Button no = new Button("No");
 
         EventHandler<MouseEvent> playHandler = new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 difficultyScreen();
+                dialog.hide();
             }
         };
-        yes.addEventFilter(MouseEvent.MOUSE_CLICKED, playHandler);
+        Button yes = addButton("Yes", playHandler);
 
         EventHandler<MouseEvent> quitHandler = new EventHandler<MouseEvent>() {
             @Override
@@ -237,7 +221,7 @@ public class CheckersGUI extends Application {
                 System.exit(0);
             }
         };
-        no.addEventFilter(MouseEvent.MOUSE_CLICKED, quitHandler);
+        Button no = addButton("No", quitHandler);
 
         HBox hbox = new HBox();
         hbox.setSpacing(30);
@@ -250,5 +234,22 @@ public class CheckersGUI extends Application {
         Scene scene = new Scene(layout, 500, 300);
         dialog.setScene(scene);
         dialog.show();
+    }
+    
+    /**
+     * Create a button displaying some text and employing an event filter
+     * which fires once the button has been clicked.
+     * 
+     * @param buttonText
+     * @param handler
+     * @return 
+     */
+    static private Button addButton(String buttonText, EventHandler handler) {
+        Button button = new Button(buttonText);
+        button.setMinWidth(200);
+        button.setMinHeight(50);
+        button.addEventFilter(MouseEvent.MOUSE_CLICKED, handler);
+        
+        return button;
     }
 }
